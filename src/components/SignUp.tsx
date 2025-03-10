@@ -9,6 +9,7 @@ import {
 } from '@ionic/react';
 import { useAuth } from '../context/AuthContext';
 import { server } from '../contants';
+import axios from 'axios';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -18,15 +19,14 @@ const SignUp = () => {
 
   const handleSignUp = async () => {
     try {
-      const _ = await fetch(server + 'newUser/', {
+      const _ = await axios(server + 'login/newUser/', {
         method: 'POST',
-        body: JSON.stringify({
+        data: {
           email,
           password
-        })
+        }
       });
-      login();
-      history.push('/');
+      history.push('/signin');
     } catch (error) {
       alert('Contraseña debe tener al menos 6 caracteres');
     }

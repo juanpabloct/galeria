@@ -9,6 +9,7 @@ import {
 } from '@ionic/react';
 import { useAuth } from '../context/AuthContext';
 import { server } from '../contants';
+import axios from 'axios';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -18,17 +19,16 @@ const SignIn = () => {
 
   const handleSignIn = async () => {
     try {
-      const loginServer = await (
-        await fetch(server + 'login/', {
-          method: 'POST',
-          body: JSON.stringify({
-            email,
-            password
-          })
-        })
-      ).json();
-      console.log(loginServer);
-      // localStorage.setItem("" ,token);
+      const { data } = await axios(server + 'login/', {
+        method: 'POST',
+        data: {
+          email,
+          password
+        }
+      });
+
+      localStorage.setItem('token', data.accessToken);
+      localStorage.setItem('userId', data.accessToken);
       login();
       history.push('/');
     } catch (err) {
