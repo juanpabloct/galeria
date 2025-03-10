@@ -1,49 +1,61 @@
-import { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import {
   IonPage,
   IonContent,
   IonInput,
   IonButton,
-  IonTitle,
-} from "@ionic/react";
-import { useAuth } from "../context/AuthContext";
+  IonTitle
+} from '@ionic/react';
+import { useAuth } from '../context/AuthContext';
+import { server } from '../contants';
 
 const SignIn = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const { login } = useAuth();
   const history = useHistory();
 
-  const handleSignIn = () => {
-    if (email === "carlos" && password === "123456") {
+  const handleSignIn = async () => {
+    try {
+      const loginServer = await (
+        await fetch(server + 'login/', {
+          method: 'POST',
+          body: JSON.stringify({
+            email,
+            password
+          })
+        })
+      ).json();
+      console.log(loginServer);
+      // localStorage.setItem("" ,token);
       login();
-      history.push("/");
-    } else {
-      alert("Credenciales incorrectas");
+      history.push('/');
+    } catch (err) {
+      alert('Credenciales incorrectas');
     }
   };
 
   return (
     <IonPage>
-      <IonContent className="ion-padding">
-        <IonTitle className="ion-text-center">Iniciar Sesión</IonTitle>
+      <IonContent className='ion-padding'>
+        <IonTitle className='ion-text-center'>Iniciar Sesión</IonTitle>
         <IonInput
-          placeholder="Correo electrónico"
+          placeholder='Correo electrónico'
           onIonChange={(e) => setEmail(e.detail.value!)}
         />
         <IonInput
-          type="password"
-          placeholder="Contraseña"
+          type='password'
+          placeholder='Contraseña'
           onIonChange={(e) => setPassword(e.detail.value!)}
         />
-        <IonButton expand="full" onClick={handleSignIn}>
+        <IonButton expand='full' onClick={handleSignIn}>
           Iniciar Sesión
         </IonButton>
 
         {/* Contenedor centrado */}
-        <div style={{ textAlign: "center", marginTop: "10px" }}>
-          <IonButton fill="clear" onClick={() => history.push("/signup")}>
+        <div style={{ textAlign: 'center', marginTop: '10px' }}>
+          <IonButton fill='clear' onClick={() => history.push('/signup')}>
             ¿No tienes cuenta?
           </IonButton>
         </div>
