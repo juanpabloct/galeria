@@ -19,15 +19,28 @@ import {
 import { camera, trash } from 'ionicons/icons';
 import { takePhoto } from '../services/photoService';
 import Footer from './Footer';
-
+import axios from 'axios';
+import { server } from '../contants';
+interface Photos {
+  id: number;
+  isPublic: true;
+  userId: number;
+  img: string;
+}
 const PhotoGallery = () => {
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<Photos[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     const storedPhotos = JSON.parse(localStorage.getItem('photos') || '[]');
+    const user = localStorage.getItem('userId');
+    (async () => {
+      const { data } = await axios.get(server + `images/user/${user}/`);
+      setPhotos(data);
+    })();
+
     setPhotos(storedPhotos);
   }, []);
 
@@ -38,11 +51,23 @@ const PhotoGallery = () => {
   const handleTakePhoto = async () => {
     setLoading(true);
     const photoUrl = await takePhoto();
-    console.log(photoUrl, 'phooto');
     setLoading(false);
     if (photoUrl) {
-      const updatedPhotos = [photoUrl, ...photos];
-      setPhotos(updatedPhotos.slice(0, 10));
+      const user = localStorage.getItem('userId');
+      const formData = new FormData();
+      formData.append('file', photoUrl);
+      formData.append('isPublic', 'true');
+      const newPhoto = await axios.post(
+        server + `/images/user/${user}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      const updatedPhotos = [photoUrl, ...newPhoto.data];
+      setPhotos(updatedPhotos);
     }
   };
 
@@ -89,7 +114,7 @@ const PhotoGallery = () => {
             {photos.map((photo, index) => (
               <IonCol size='6' size-md='4' key={index}>
                 <IonImg
-                  src={photo}
+                  src={photo.img}
                   alt={`Foto ${index + 1}`}
                   style={{
                     borderRadius: '10px',
@@ -97,7 +122,7 @@ const PhotoGallery = () => {
                     transition: 'transform 0.2s',
                     cursor: 'pointer'
                   }}
-                  onClick={() => setSelectedPhoto(photo)}
+                  onClick={() => setSelectedPhoto(photo.img)}
                 />
               </IonCol>
             ))}

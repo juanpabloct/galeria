@@ -41,7 +41,7 @@ const App: React.FC = () => {
           />
           <Route
             exact
-            path='/gallery'
+            path='/:userId/gallery'
             render={() =>
               isAuthenticated ? <PhotoGallery /> : <Redirect to='/signin' />
             }

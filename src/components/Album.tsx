@@ -20,12 +20,18 @@ import { add, trash, close } from 'ionicons/icons';
 import Footer from './Footer';
 import axios from 'axios';
 import { server } from '../contants';
+import { useHistory } from 'react-router';
 
 const AlbumGallery = () => {
   const getUser = localStorage.getItem('userId');
-  const [albums, setAlbums] = useState<{ name: string; isPublic: boolean }[]>(
-    []
-  );
+  const [albums, setAlbums] = useState<
+    {
+      id: number;
+      name: string;
+      user_id: number;
+      isPublic: boolean;
+    }[]
+  >([]);
   const [newAlbum, setNewAlbum] = useState({ name: '', isPublic: false });
   const [showModal, setShowModal] = useState(false);
 
@@ -44,16 +50,19 @@ const AlbumGallery = () => {
   const handleCreateAlbum = async () => {
     if (newAlbum.name.trim() === '') return;
     try {
-      await axios.post(`${server}user/${getUser}/album`, newAlbum);
-      setAlbums([...albums, { ...newAlbum }]);
+      const dataUser = await axios.post(
+        `${server}user/${getUser}/album`,
+        newAlbum
+      );
+      setAlbums([...albums, { ...dataUser.data }]);
       setNewAlbum({ name: '', isPublic: false });
       setShowModal(false);
     } catch (error) {
       console.error('Error al crear el álbum:', error);
     }
   };
+  const history = useHistory();
 
-  // Eliminar un álbum
   const handleDeleteAlbum = (albumName: string) => {
     const updatedAlbums = albums.filter((album) => album.name !== albumName);
     setAlbums(updatedAlbums);
@@ -75,14 +84,12 @@ const AlbumGallery = () => {
             </p>
           ) : (
             albums.map((album, index) => (
-              <IonItem key={index} button>
+              <IonItem
+                key={index}
+                button
+                onClick={() => history.push(`/${album.id}/gallery`)}
+              >
                 <IonLabel>{album.name}</IonLabel>
-                <IonButton
-                  color='danger'
-                  onClick={() => handleDeleteAlbum(album.name)}
-                >
-                  <IonIcon icon={trash} />
-                </IonButton>
               </IonItem>
             ))
           )}
