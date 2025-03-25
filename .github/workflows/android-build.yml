@@ -1,0 +1,82 @@
+name: Build Android APK and Deploy to Google Drive
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    
+    - name: Setup PNPM
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+        run_install: false
+    
+    - name: Get PNPM store directory
+      id: pnpm-cache
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+    
+    - name: Setup PNPM cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+    
+    - name: Install dependencies
+      run: pnpm install
+    
+    - name: Build web app
+      run: pnpm build
+    
+    - name: Sync Capacitor
+      run: npx cap sync android
+    
+    - name: Build Android APK
+      run: |
+        cd android
+        chmod +x ./gradlew
+        ./gradlew assembleDebug
+    
+    - name: Locate and rename APK
+      run: |
+        cp android/app/build/outputs/apk/debug/app-debug.apk ./miapp-galeria.apk
+    
+    - name: Setup Google Drive credentials
+      run: |
+        echo "${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}" > credentials.json
+      
+    - name: Upload APK to Google Drive
+      uses: adityak74/google-drive-upload-git-action@main
+      with:
+        credentials: credentials.json
+        filename: miapp-galeria.apk
+        folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        name: miapp-galeria-${{ github.sha }}.apk
+        overwrite: true
+
+    - name: Cleanup
+      run: rm -f credentials.json miapp-galeria.apk
