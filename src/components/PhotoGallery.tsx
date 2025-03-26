@@ -21,6 +21,7 @@ import { takePhoto } from '../services/photoService';
 import Footer from './Footer';
 import axios from 'axios';
 import { server } from '../contants';
+import { useHistory } from 'react-router';
 interface Photos {
   id: number;
   isPublic: true;
@@ -79,7 +80,7 @@ const PhotoGallery = () => {
     setPhotos([]);
     localStorage.removeItem('photos');
   };
-
+  const history = useHistory();
   return (
     <IonPage>
       <IonHeader>
@@ -92,6 +93,22 @@ const PhotoGallery = () => {
       </IonHeader>
 
       <IonContent className='ion-padding'>
+        <div
+          style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
+          onClick={() => history.push('/')}
+        >
+          <IonImg
+            src='resources/regresar.svg'
+            alt='back view'
+            style={{
+              width: '20px',
+              height: '20px',
+              backgroundColor: 'white',
+              borderRadius: '20px'
+            }}
+          />
+          <p>regresar</p>
+        </div>
         {photos.length === 0 ? (
           <p style={{ textAlign: 'center', marginTop: '20px' }}>
             No hay fotos aún. ¡Toma una!
