@@ -26,6 +26,7 @@ setupIonicReact();
 
 const App: React.FC = () => {
   const { isAuthenticated } = useAuth(); // 🔐 Verifica si el usuario está autenticado
+  console.log('change');
 
   return (
     <IonApp>
