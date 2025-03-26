@@ -1,9 +1,9 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'galeria',
-  webDir: 'dist'
+  appId: "com.miapp.galeria",
+  appName: "MiGaleria",
+  webDir: "dist",
 };
 
 export default config;
